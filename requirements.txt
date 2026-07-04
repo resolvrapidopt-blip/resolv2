@@ -1,0 +1,21 @@
+# ResolvRapido Brasil v18 - dependências completas (corrigido)
+streamlit>=1.30
+streamlit-authenticator>=0.4.1
+pyyaml>=6.0
+pandas>=2.0
+reportlab>=4.0
+cryptography>=42.0
+requests>=2.31
+qrcode[pil]>=7.4
+
+# Auditor Pack / assinatura digital / OCR (recomendado instalar todas):
+pyHanko[pkcs11,opentype,xmp]>=0.25
+pytesseract>=0.3.10
+pdf2image>=1.17
+Pillow>=10.0
+rfc3161ng>=2.1.3
+lxml>=5.0
+pdfplumber>=0.11
+
+# Dependências de sistema (instalar via apt, não via pip):
+#   apt-get install -y tesseract-ocr tesseract-ocr-por poppler-utils
