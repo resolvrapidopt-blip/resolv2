@@ -1,4 +1,52 @@
 import streamlit as st
+import os
+import json
+
+
+def _carregar_config_fallback():
+    try:
+        secrets = st.secrets
+        auth_cfg = secrets["auth"]
+        cookie_cfg = secrets["cookie"]
+        return {
+            'credentials': {
+                'usernames': {
+                    auth_cfg["username"]: {
+                        'email': auth_cfg["email"],
+                        'name': auth_cfg["name"],
+                        'password': auth_cfg["hashed_password"]
+                    }
+                }
+            },
+            'cookie': {
+                'expiry_days': int(cookie_cfg["expiry_days"]),
+                'key': cookie_cfg["key"],
+                'name': cookie_cfg["name"]
+            }
+        }
+    except Exception:
+        if os.path.exists('config.json'):
+            with open('config.json', 'r') as f:
+                return json.load(f)
+        return {
+            'credentials': {
+                'usernames': {
+                    'admin': {
+                        'email': 'admin@resolvrapido.com.br',
+                        'name': 'Administrador',
+                        'password': '$2b$12$Xn3mTGk6j2OuEHNdV6yOVOX4Y7k3HZl5kQmK1P9e2RjN8UoLmzS2i'
+                    }
+                }
+            },
+            'cookie': {
+                'expiry_days': 30,
+                'key': 'resolvrapido_cookie_key_2026',
+                'name': 'resolvrapido_cookie'
+            }
+        }
+
+
+config = _carregar_config_fallback()
 
 # Integrador RFB Expandido (fontes fiscais oficiais)
 try:
@@ -21,32 +69,10 @@ try:
     _VALIDACAO_UNIVERSAL_OK = True
 except ImportError:
     _VALIDACAO_UNIVERSAL_OK = False
-import yaml
-from yaml.loader import SafeLoader
-import streamlit_authenticator as stauth
-import os
-
-# Carregar configuração do arquivo YAML (local) ou st.secrets (produção)
-if os.path.exists('config.yaml'):
-    with open('config.yaml') as file:
-        config = yaml.load(file, Loader=SafeLoader)
-else:
-    config = {
-        'credentials': {
-            'usernames': {
-                st.secrets["auth"]["username"]: {
-                    'email': st.secrets["auth"]["email"],
-                    'name': st.secrets["auth"]["name"],
-                    'password': st.secrets["auth"]["hashed_password"]
-                }
-            }
-        },
-        'cookie': {
-            'expiry_days': int(st.secrets["cookie"]["expiry_days"]),
-            'key': st.secrets["cookie"]["key"],
-            'name': st.secrets["cookie"]["name"]
-        }
-    }
+try:
+    import streamlit_authenticator as stauth
+except Exception:
+    stauth = None
 
 # ============================================================
 # AUTENTICAÇÃO FIXA - USUÁRIO: admin / SENHA: admin
@@ -13326,11 +13352,13 @@ import json as _json_val
 import io as _io_val
 import hashlib as _hashlib_val
 import csv as _csv_val
+import os as _os
 from decimal import Decimal as _Decimal_val, ROUND_HALF_UP as _ROUND_val, InvalidOperation as _InvalidOp_val
 from datetime import datetime as _datetime_val
+from typing import Optional, Dict, Any
 
 # --- Cache da base NCM ---
-_BASE_NCM_CACHE_v18: _Optional[Dict[str, Any]] = None
+_BASE_NCM_CACHE_v18: Optional[Dict[str, Any]] = None
 
 def _safe_dec_v18(val, default="0"):
     """Converte para Decimal de forma segura (validação v18)."""
